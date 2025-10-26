@@ -1,11 +1,35 @@
 # Singchat
-Sure, here's all the previous information formatted as a comprehensive README.md file, ready to be copied for your GitLab or GitHub repository.signchat-web-prototipo🎯 Integración Lógica de la API SignChat en Sistemas de Mensajería WebEste proyecto representa la culminación de la fase de Despliegue y Entrega del Prototipo, validando la integración eficiente de la lógica de traducción de la API SignChat en un entorno web111111111.El modelo de configuración Back-End fue diseñado para ser replicable, permitiendo que terceros sistemas de mensajería adopten fácilmente la solución para una comunicación inclusiva sordo-oyente222222222.💻 Arquitectura y Tecnologías ClaveLa solución sigue una arquitectura de N-Capas con un enfoque en microservicios desacoplados3333. El servidor Node.js actúa como Orquestador y Proxy para los servicios de traducción externos, manteniendo una comunicación de baja latencia con los clientes a través de WebSockets4444444.ComponenteTecnologíaPropósito en la Integración Servidor (Back-End)Node.js (Express)Entorno de ejecución asíncrono, esencial como Orquestador de la API y manejador de rutas HTTP6.Comunicación en Tiempo RealWebSockets (Socket.IO)Protocolo Full-Duplex para comunicación instantánea, garantizando baja latencia y sincronización de mensajes7.Base de Datos (OLTP)PostgreSQL (Neon)Almacenamiento transaccional para asegurar la persistencia (durabilidad) del historial de mensajes8888.Consumo de API ExternaFetch API (Node.js/JS)Permite realizar solicitudes asíncronas (POST y GET) a los microservicios de traducción de SignChat9.⚙️ Estructura y Pasos de Configuración1. Estructura del Repositorio/signchat-web-prototipo
+Sure, here's all the previous information formatted as a comprehensive README.md file, ready to be copied for your GitLab or GitHub repository.signchat-web-prototipo🎯 Integración Lógica de la API SignChat en Sistemas de Mensajería WebEste proyecto representa la culminación de la fase de Despliegue y Entrega del Prototipo, validando la integración eficiente de la lógica de traducción de la API SignChat en un entorno web
+
+1.El modelo de configuración Back-End fue diseñado para ser replicable, permitiendo que terceros sistemas de mensajería adopten fácilmente la solución para una comunicación inclusiva sordo-oyente
+
+2.Arquitectura y Tecnologías ClaveLa solución sigue una arquitectura de N-Capas con un enfoque en microservicios desacoplados
+
+3.El servidor Node.js actúa como Orquestador y Proxy para los servicios de traducción externos, manteniendo una comunicación de baja latencia con los clientes a través de WebSockets
+   
+4.ComponenteTecnologíaPropósito en la Integración Servidor (Back-End)Node.js (Express)Entorno de ejecución asíncrono, esencial como Orquestador de la API y manejador de rutas HTTP
+
+5.Comunicación en Tiempo RealWebSockets (Socket.IO)Protocolo Full-Duplex para comunicación instantánea, garantizando baja latencia y sincronización de mensajes
+
+6.Base de Datos (OLTP)PostgreSQL (Neon)Almacenamiento transaccional para asegurar la persistencia (durabilidad) del historial de mensajes
+
+7.Consumo de API ExternaFetch API (Node.js/JS)Permite realizar solicitudes asíncronas (POST y GET) a los microservicios de traducción de SignChat
+
+8.⚙️ Estructura y Pasos de Configuración1. Estructura del Repositorio/signchat-web-prototipo
+
+
 ├── .env                  # Variables de entorno (URL Base de la API, Conexión DB)
+
 ├── package.json          # Metadatos y dependencias (Express, Socket.IO, pg)
+
 ├── server.js             # 🎯 BACK-END: Lógica central, orquestación, WebSockets
+
 └── /public
+
     ├── index.html        # 🎨 FRONT-END: Estructura HTML y lógica de cliente Socket.IO
+    
     ├── style.css         # 🖼️ Estilos del chat y teclado LSC
+    
     └── client.js         # Lógica del cliente (manejo de DOM, envío/recepción de mensajes)
 2. Configuración del Entorno (.env)Crea un archivo llamado .env en la raíz del proyecto. Esta configuración es crucial para la replicabilidad10.Bash# Archivo .env
 # Variables críticas para la replicabilidad y el despliegue
