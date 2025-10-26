@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" data-contrast="normal">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        SignChat-inicio
+    </title>
+    <style>
+        :root {
+            /*base de la presentación de la pagina */
+            --fs-base: 16px;
+            /*tamaño base de la letra*/
+            --bg: #f6f7fb;
+            --paper: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --brand: #3B82F6;
+            --brand2: #1d4ed8;
+            --border: #030303;
+            --shadow: 0 8px 28px rgba(0, 0, 0, .08);
+            --focus: 2px solid #22c55e;
+            /*si se navega por teclado, se reflejara un vorde de ese color, debe ser accesible */
+        }
+
+        [data-contrast="high"][data-theme="light"]:root {
+            /*como es el contraste alto cuando el tema es claro*/
+            --bg: #ffffff;
+            --paper: #ffffff;
+            --text: #000;
+            --muted: #000;
+            --brand: #000;
+            --brand2: #000;
+            --border: #000;
+            --focus: 3px solid #ffbf00;
+            /*debe ser visible */
+        }
+
+        [data-contrast="high"][data-theme="dark"]:root {
+            --bg: #000000;
+            --paper: #000000;
+            --text: #ffffff;
+            --brand: #ffffff;
+            --border: #ffffff;
+            --focus: 3px solid #ffbf00;
+            /*mantiene el color del foco */
+        }
+
+        /*------------------------------------------------------------
+            REDUCE MOTION, COMO PREFERENCIA A USUARIOS CON DISCAPACIDAD VISUAL PARICAL 
+            reduir movimiento y animaciones a usuarios que ya tengan esta calse de configuración, sigue en WCAG 2.3.3
+            --------------------------------------------------------------
+            */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: .01ms !important;
+                /* cancela animaciones */
+                animation-iteration-count: 1 !important;
+                /*ejecutar solo una vez */
+                transition-duration: .01ms !important;
+                /*quitar transiciones suaves */
+                scroll-behavior: auto !important;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* que sea como una caja, que tiene paadding, es decir margenes que respeta y borde delimitado */
+        html,
+        body {
+            height: 100%;
+        }
+
+        /*html y el cuerpo de la pagina en general debe ocupar el 100% de la ventana de navegación*/
+        body {
+            margin: 0;
+            font: 400 1rem/1.45 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: var(--text);
+            background: linear-gradient(115deg, var(--brand), var(--brand2) 100%);
+            display: grid;
+            /*grid op cuadricula como contenedor para ubicar los boxes del chat */
+            place-items: center;
+            padding: 24px;
+        }
+
+        a.skip-link {
+            position: absolute;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        a.skip-link:focus {
+            left: 16px;
+            top: 12px;
+            width: auto;
+            height: auto;
+            background: var(--paper);
+            color: var(--text);
+            padding: 8px 10px;
+            /*espaciado del foco */
+            border-radius: 8px;
+            z-index: 999;
+            /*se segura que el elemento este ene le menu */
+            outline: var(--focus);
+        }
+
+        .shell {
+            width: min(980px, 100%);
+        }
+
+        .card {
+            background: var(--paper);
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 32px;
+            min-height: 460px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(115deg, var(--brand), var(--brand2) 100%);
+            color: #fff;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .brand {
+            display: none !important;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 1px solid rgba(255, 255, 255, .25);
+            background: #fff;
+            color: #0f172a;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn:focus {
+            outline: var(--focus);
+            outline-offset: 2px;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .65);
+        }
+
+        .card-body {
+            padding: 28px 24px 20px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .headline {
+            text-align: center;
+        }
+
+        .headline h1 {
+            margin: .2rem 0 .25rem;
+            font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+            font-weight: 800;
+        }
+
+        .headline p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        #lastmode {
+            display: none;
+            justify-content: center;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eef2ff;
+            border: 1px solid var(--border);
+            color: #0f172a;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: .9rem;
+        }
+
+        [data-contrast="high"] .pill {
+            background: var(--paper);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .modes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+
+        .mode {
+            border: 2px solid var(--border);
+            background: #fff;
+            color: #0f172a;
+            border-radius: 16px;
+            padding: 16px 18px;
+            text-align: left;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .mode small {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-top: 2px;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #64748b;
+            font-size: .95rem;
+        }
+
+        [data-theme='dark']:root:not([data-contrast="high"]) {
+            --paper: #0b1220;
+            --text: #e5eefc;
+            --border: #1f2a44;
+        }
+
+        [data-theme='dark']:root:not([data-contrast="high"]) .mode {
+            --paper: #0b1220;
+            --text: #e5eefc;
+            --border: #3bb2f6;
+        }
+
+        html {
+            font-size: var(--fs-base);
+        }
+
+        /* raíz controla todo el rem */
+        button,
+        .btn,
+        .mode {
+            font-size: 1rem;
+        }
+
+        /* botones heredan el rem */
+        .btn,
+        .mode {
+            padding: .5em .75em;
+        }
+
+        /* padding relativo → crece */
+        .solo-sena {
+            display: inline;
+            margin: .5rem;
+        }
+
+        .sena-visible {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            margin-left: .35rem;
+            vertical-align: middle;
+        }
+
+        .sena-imagen {
+            height: 48px;
+            width: 48px;
+            border: 1px solid #dfe7fe;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="shell">
+        <section class="card" role="region" aria-label="Seleccion de modo">
+            <div class="card-header">
+                <div class="brand" aria-label="Identidad">
+                    <span class="dot" aria-hidden="true"></span>
+                    <span>SignChat</span>
+                </div>
+                <div class="controls" role="group" aria-label="Preferencias de Accesibilidad">
+                    <button id="contrastToggle" class="btn btn-ghost" aria-pressed="false" title="Alto Contraste">Alto
+                        Contraste</button>
+                    <button id="themeToggle" class="btn btn-ghost" aria-pressed="false" title="Tema">Tema</button>
+                    <button id="fontUp" class="btn" aria-label="Aumentar tamaño de letra">A+</button>
+                    <button id="fontReset" class="btn" aria-label="Restablecer letra">A</button>
+                    <button id="fontDown" class="btn" aria-label="Reducir tamaño de letra">A-</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="headline">
+                    <h1>Bienvenid@ a <span style="color:var(--brand2)">SignChat</span></h1>
+                    <span class="sign-target">Bienvenido a SignChat</span>
+                </div>
+                <div id="lastmode" class="lastmode"><span id="lastMode" class="pill"></span></div>
+                <div id="modes" class="modes" role="list">
+                    <button class="mode" role="listitem" onclick="pick('escrito')">
+                        Español Escrito
+                        <span class="solo-sena">(Para Personas Oyentes)</span>
+                    </button>
+                    <button class="mode" role="listitem" onclick="pick('sena')">
+                        Lengua de señas colombiana
+                        <span class="solo-sena">(Para Personas con Discapacidad Auditiva)</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script>
+        const setAttr = (k, v) => document.documentElement.setAttribute(k, v);
+        const themeToggle = document.getElementById('themeToggle');
+        const contrastToggle = document.getElementById('contrastToggle');
+        const fontDown = document.getElementById('fontDown');
+        const fontReset = document.getElementById('fontReset');
+        const fontUp = document.getElementById('fontUp');
+        //guardar preferemcias
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const savedContrast = localStorage.getItem('contrast') || 'normal';
+        setAttr('data-theme', savedTheme);
+        setAttr('data-contrast', savedContrast);
+        themeToggle.setAttribute('aria-pressed', String(savedTheme == 'dark'))
+        contrastToggle.setAttribute('aria-pressed', String(savedContrast == 'high'))
+        //tamaño del texto 
+        //con clamp limita a un valor minimo v del tamaño de la fuente, y un maximo 
+        const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+        //trata de buscar el tamaño de la fuente de antes,, sino usa el font-size basico que es el fs-base en el root
+        const getFs = () => parseInt(localStorage.getItem('fs-base') || '16', 10);
+        //aplica cambios de la fuente y lo actualiza en fd-base
+        //el rango entre 14 y 22 px por accesibilidad 
+        const setFs = (px) => {
+            const v = clamp(px, 14, 22);
+            document.documentElement.style.setProperty('--fs-base', v + 'px');
+            localStorage.setItem('fs-base', String(v));
+        }
+        //se aplica el tama;o seleccionado 
+        setFs(getFs());
+        //tema claro y oscuro
+        //hace referencia al atributo data-theme centre light y dark
+        //guarda la 0preferencia en las variables theme y contrast
+        themeToggle.addEventListener('click', () => {
+            const now = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            setAttr('data-theme', now);
+            localStorage.setItem('theme', now);
+            themeToggle.setAttribute('aria-pressed', String(now === 'dark'));
+        });
+        contrastToggle.addEventListener('click', () => {
+            const now = document.documentElement.getAttribute('data-contrast') === 'high' ? 'normal' : 'high';
+            setAttr('data-contrast', now);
+            localStorage.setItem('contrast', now);
+            contrastToggle.setAttribute('aria-pressed', String(now === 'high'));
+        });
+        //controles de tamaño de la letra 
+        fontDown.addEventListener('click', () => setFs(getFs() - 1));
+        fontReset.addEventListener('click', () => setFs(16));
+        fontUp.addEventListener('click', () => setFs(getFs() + 1));
+        //guaradar modo elegido 
+        const prev = localStorage.getItem('mode');
+        if (prev) {
+            const map = {
+                "escrito": "ultimo modo: español escrito",
+                "seña": "ultimo modo: lengua de señas"
+            };
+            const el = document.getElementById('lastMode');
+            el.textContent = map[prev] || `Último modo: ${prev}`;
+            el.style.display = "style.display = 'flex'";
+        }
+        // pick: guarda el modo elegido en localStorage y navega a /chat.
+        // (El chat leerá 'mode' y ajustará su UI/lógica con base en ese valor.)
+        function pick(mode) {
+            localStorage.setItem('mode', mode);
+            try {
+                if (location.protocol.startsWith('http')) {
+                    location.href = `/chat?m=${mode}`;//el modo debe enviarse por parametro 
+                } else {
+                    alert('Modo guardado: ' + mode + '\nEn tu servidor te llevará a /chat.');
+                }
+            } catch (_) { }
+        }
+        // Expone la función para poder usarla en atributos inline (onclick="pick('...')") del HTML.
+        window.pick = pick;
+        const TEXTTOIMG_API = "/api/txt-to-img";
+        async function fetchSignImages(text) {
+            const resp = await fetch(TEXTTOIMG_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data?.error || "Error al traducir"); //con el ? llama el api, y verifixca propiedad
+            return Array.isArray(data?.images) ? data.images : [];
+        }
+
+        //funcion que depe garantizar que se existan los span para localizar las señas
+        function ensureOutAfter(el) {
+            let out = el.nextElementSibling; // intenta obtener el elemento siguiente 
+            // si no es un span con la clase "sena-visible", la crea
+            if (!(out && out.classList.contains("sena-visible"))) {
+                out = document.createElement("span"); 
+                out.className = "sena-visible"
+                //inserta un nuevo span al lado del original 
+                el.insertAdjacentElement("afterend", out);
+            }
+            return out;
+        }
+
+        //funcion principal, toma el texto y lo pasa a img
+        async function translateAndAppend(el) {
+            //obtiene el texto: y elimina espacios de incio a fin
+            const text = (el.dataset.original ?? el.textContent).trim();
+            //guarda el texto original o la referencia que se requiere traducir 
+            el.dataset.original = text;
+            if (!text) return; //si no hay texto, se termina la funcion 
+            const out = ensureOutAfter(el) //garantiza que tengamos el contenedor que guardara las imagenes 
+            out.textContent = "..." //muestra indicador de carga
+            try {
+                //llama el api que se nombro en la funciopn de fetchsignimages
+                //se envia el texto
+                const images = await fetchSignImages(text)
+                //si no se reciben el url de las imagenes, se muestrta un mensaje 
+                if (!images.length) {
+                    out.textContent = "**SIN RESULTADO **";
+                    return;
+                }
+                out.innerHTML = "";// limpia el indicador de la carga 
+                //itera las url para insertan la imagen con la etiqueta img src
+                for(const src of images){
+                    const img = document.createElement("img");
+                    img.src = src;
+                    img.alt= "Seña";
+                    img.className="sena-imagen";
+                    //para carga optimizada de ikmagenes
+                    img.loading="lazy";
+                    img.decoding="async";
+                    out.appendChild(img);
+                }
+            }catch (e) {
+                //manejo de excepción 
+                console.error(e);
+                out.textContent="Error al traducir";
+            }
+        }
+            //la carga para la ejecución de la estructura en html
+            document.addEventListener("DOMContentLoaded", async () =>{
+                const visibles = document.querySelectorAll(".sign-target");
+                const tambien = document.querySelectorAll(".solo-sena");
+                const todos =[...visibles,...tambien];
+                await Promise.all(todos.map(translateAndAppend));
+            });
+    </script>
+</body>
+
+</html>

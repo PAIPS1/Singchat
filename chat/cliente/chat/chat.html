@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Web SignChat</title>
+  <style>
+    /***-------------------------------------------------
+       se declara el tema, en variables que cubren todo el front 
+       --------------------------------------------------------*/
+    :root {
+      --fs-base: 16px
+        /*Se declara el tamaño base de la letra que podra crecer */
+        /*-------------------------------------------------
+        colores del chat 
+        ------------------------------------------------*/
+        --bg: #f6f7fb;
+      /*fondo blanco */
+      --brand: #3B82F6;
+      /*COLOR PRINCIPAL DE SECCIONES DEL CHAT */
+      --brand-2: #1d4ed8;
+      /* version mas oscuras para los bordes */
+      --paper: #ffffff;
+      /*color para tarjetas coorporativas */
+      --muted: #eef2ff;
+      /*fondo apra partes secundarias y de alto contraste */
+      /* ----------------------------------------------
+        Colores del texto
+        ------------------------------------------------- */
+      --text: #0f172a;
+      /*color principal de toda la letra, es un gris oscuro, bastante similar al color negro, un poco mas claro */
+      --text-muted: #475569;
+      /*partes de texto secundarias o no tan importantes, escritas en un gris un tono mas oscuro */
+      /* --------------------------------------------------
+        Color para los mensajes del chat 
+        ------------------------------------*/
+      --bubble-me: #dbeafe;
+      /* mensajes propios, asi se ve en el navegador propio */
+      --bubble-others: #f1f5f9
+        /*mensajes de la persona o personas con las que me estoy comunicando */
+        /*----------------------------------------
+         otros estilos del chat 
+        ----------------------------------------------*/
+        --border: #e2e8f0;
+      /*color de otros bordes */
+      --shadow: 0 8px 28px rgba(0, 0, 0, .4);
+      /*sombra en las cajas u trajetas */
+      --focus: 2px solid #22c55e;
+    }
+
+    /*-----------------------------------------------------
+      /* ALTO CONTRASTE (CARACTERISTICAS PARA DISCAPACIDAD VISUAL PARCIAL) - SE CONFIGURA CON BASE EN LA WCAG
+      ***********
+      * Se aplica en el html, realizando ajuste a los colores a blanco/negro puros para asegurar contraste maximo 
+      ---------------------------------------------------------*/
+    [data-contrast="high"][data-theme="light"]:root {
+      --bg: #ffffff;
+      /* fondo blanco */
+      --paper: #ffffff;
+      /*contenedor tambien en blanco */
+      --muted: #ffffff;
+      /*fondos secundarios en blanco */
+      --text: #000000;
+      /*texto en negro */
+      --text-muted: #000000;
+      /*textos secundarios todos en negro tambien */
+      --brand: #000000;
+      /* cabeceras y botones totalmente en NEGRO */
+      --brand-2: #000000;
+      /*plan b de cabecera, tambien en negro */
+      --border: #000;
+      /*bordes negros*/
+      --bubble-me: #ffffff;
+      /* burbujas del chat propio en blanco */
+      --bubble-others: #ffffff;
+      /*burbujas de las personas con las que establezco conversación */
+      --focus: 3px solid #ffbf00;
+      /* foco accesible, es decir, cuando se navega con el texcla, hara un borde amarillo que puedan distinguir las perosonas con discapacidad visual parcial.  */
+    }
+
+    [data-contrast="high"][data-theme="dark"]:root {
+      --bg: #000000;
+      /*fondo principal con contraste cuando el tema sea oscuro, que es negro absoluto */
+      --paper: #000000;
+      /* tarjertas o contenedores en negro */
+      --muted: #000000;
+      /* focos secundarios en negro */
+      --text: #ffffff;
+      /*texto en blanco, texto principal */
+      --text-muted: #ffffff;
+      /*texto secundario tambien negro y blanco */
+      --brand: #ffffff;
+      /* botos, cabecera en blanco */
+      --brand-2: #ffffff;
+      /* variantes a los botes y pie de pagina, tambien en blanco */
+      --border: #fff;
+      /* bordes blancos */
+      --bubble-me: #000000;
+      /* burbuja de chat propio en negro */
+      --bubble-others: #000000;
+      /*busbuja para los otros en negro */
+      --focus: #3px solid #ffbf00;
+      /*para navegación por teclado, amarillo vibrante, visible en un fondo #000000 */
+    }
+
+    [data-theme="dark"]:root:not([data-contrast="high"]) {
+      --bg: #1e293b;
+      --brand: #60a5fa;
+      --brand-2: #3b82f6;
+      --paper: #334155;
+      --muted: #475569;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --bubble-me: #3b82f6;
+      --bubble-others: #475569;
+      --border: #334155;
+      --shadow: 0 8px 28px rgba(0, 0, 0, .6);
+      --focus: #3px solid #ffbf00;
+    }
+
+    [data-theme="dark"]:root .msg.me .bubble {
+      color: white;
+    }
+
+    /*------------------------------------------------------------
+      REDUCE MOTION, COMO PREFERENCIA A USUARIOS CON DISCAPACIDAD VISUAL PARICAL 
+      reduir movimiento y animaciones a usuarios que ya tengan esta calse de configuración, sigue en WCAG 2.3.3
+      --------------------------------------------------------------
+      */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: .01ms !important;
+        /* cancela animaciones */
+        animation-iteration-count: 1 !important;
+        /*ejecutar solo una vez */
+        transition-duration: .01ms !important;
+        /*quitar transiciones suaves */
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* aplicable al espación del navegador en general */
+    * {
+      box-sizing: border-box;
+    }
+
+    /* que sea como una caja, que tiene paadding, es decir margenes que respeta y borde delimitado */
+    html,
+    body {
+      height: 100%;
+    }
+
+    /*html y el cuerpo de la pagina en general debe ocupar el 100% de la ventana de navegación*/
+    body {
+      margin: 0;
+      /* elimina los margener por defecto de navegador y se queda con los del border-box*/
+      font-size: var(--fs-base);
+      /* tamaño de la fuente debe coincidir con el tamaño de la fuente globar que se declaro en el root con 16 px*/
+      font-family: 'Segoe UI', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      /*familia de fuentes que se usara en el chat, similar a arial*/
+      color: var(--text);
+      /* color de la letra configurado en el root, que es negro */
+      /* fondo con un degradado suve que se mezcla con el blanco defnido en el bg */
+      background: radial-gradient(1200px 600px at 50% -10px, #eaf2ff 0%, var(--bg) 35%, var(--bg) 100%);
+      display: grid;
+      /*grid op cuadricula como contenedor para ubicar los boxes del chat */
+      place-items: center;
+      /* alinear arriba (start) y en el centro (center)*/
+      padding: 16px;
+      /*margen de 16 px alrededor del contenido */
+
+    }
+
+    /*saltar al contenido boton */
+    a.skip-link {
+      position: absolute;
+      left: -9999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    /*si se ve interacción con teclado, activar el foco */
+    a.skip-link:focus {
+      left: 16px;
+      top: 12px;
+      width: auto;
+      height: auto;
+      background: var(--brand);
+      color: #fff;
+      padding: 8px 10px;
+      /*espaciado del foco */
+      border-radius: 8px;
+      z-index: 999;
+      /*se segura que el elemento este ene le menu */
+    }
+
+    .chat-shell {
+      width: min(980px, 100%);
+      /*si esta en versión de computador, toma los 980px, y en el movil, toma el 100% disponible */
+      display: grid;
+      /*permite que se divida la parte del teclado en filas y columnas para que se pueda ubicar el contenedor*/
+      grid-template-columns: 300px 1fr;
+      /* crea el contenedor del chat, la parte del sidebar que es en el en el que se ponen las opciones del nombre, etc, y el resto es la parte del chat */
+      grid-template-rows: auto 1fr auto;
+      /* se adapta a la altura, se disteribuye en la parte del contenedor principal, es decir, la parte dispuiesta opara el chat y los comandos */
+      gap: 12px;
+      /*espacio entre las celdas, es decir entre flas y columnas */
+    }
+
+    /*----------------------------------------------------
+      ------------- HEADER----------------------------------
+      -----------------------------------------------------*/
+    .header {
+      grid-column: 1 / -1;
+      /*ocupa todas las columnas, es decir, cumbre el encabezado de lado a lado */
+      background: linear-gradient(115deg, var(--brand), var(--brand-2) 100%);
+      /*cubre el 100% del header, empieza por un azul más claro, que ya se declaro arriba en la parte root, y finaliza con un azul oscuro */
+      color: white;
+      /*color del texto en blanco, al finalizar en azul oscuro, puede ser una combinacion util */
+      border-radius: 16px;
+      /*esquinas redondeadas del header */
+      padding: 14px 16px;
+      /* espaciado en la parte interna, en lo alto, 14px, lados 16px, dejan un espacio con más agradables a los botones*/
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      /* el display flexible que permite alinear el contenido al gusto, 
+        - align-items: se dejan centrados de manera vertical 
+        - justify-content:en las esquinas, da un espacio al contenido */
+      box-shadow: var(--shadow);
+      /*sombra suave definida, da profundidas a partes del header (mejor aspecto visual)*/
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      /*alinear los oobjetos de la zona de manera centrada */
+      gap: 12px;
+      /*separación entre los elementos */
+      font-weight: 800;
+      /* 800 para mejor presencia visual */
+      letter-spacing: 2px;
+      /*espaciado entre las letras */
+    }
+
+    .brand .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #22c55e;
+      /*indica que esta conectado */
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, .25);
+    }
+
+    .status {
+      font-size: .86rem;
+      /*es 0.85% más pequeña que la letra normal */
+      opacity: .95;
+      /*le da opacidad para que no le quite protagonismo al titulo */
+    }
+
+    /*---------------------------------------------
+      ---------BARRA LATERAL ------------------------
+      ----------------------------------------------*/
+    .sidebar {
+      background: var(--paper);
+      /*se deja como tipo tarjeta */
+      border: 1px solid var(--border);
+      /*borde a la tarjeta o barra lateral */
+      border-radius: 12px;
+      /*esquinas redondeadas */
+      padding: 12px;
+      /*espacio entre elementos */
+      box-shadow: var(--shadow);
+      /*sombra de profundidad */
+      min-height: 560px;
+      /*altura minima para emparejar con el chat */
+    }
+
+    .card {
+      /*son los bloques que van dentro de la barra lateral */
+      background: var(--paper);
+      /*color banco*/
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      /*esquinas redondeadas */
+      padding: 12px;
+      /*espacio entre elementos */
+      margin-bottom: 12px;
+      /*como se separan los elementos */
+    }
+
+    .card h3 {
+      margin: 0 0 8px 0;
+      /*quita lasmargenes de arriba, derecha, e izquierda y solo se lo asignamos abajo para que lo mantenga fuera del borde */
+      font-size: 1rem;
+      /*titulo compacto que no opaca a los principales */
+    }
+
+    .row {
+      display: flex;
+      /*fila flexible al posicionamiento de elementos */
+      align-items: center;
+      gap: 8px;
+      /*espacio entre los elementos */
+    }
+
+    .pill {
+      background: var(--muted);
+      /* fondo suave */
+      border: 1px solid var(var(--border));
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 700;
+    }
+
+    .btn,
+    .switch {
+      /*es para los botones o switches que son los que permite cambiar de modo */
+      border: 1px solid var(--border);
+      /*borde delgado negro */
+      background: var(--paper);
+      /*fondo claro */
+      color: var(--text)
+        /*texto con color para que sea identificable */
+      ;
+      border-radius: 10px;
+      /* esquinas redondeadas */
+      padding: 8px 10px;
+      /*espacios para que haya una zona para hacer click grande */
+      cursor: pointer;
+      /*posibilidad de hacer click en version pc */
+      font-weight: 700;
+    }
+
+    /*estilos cuando se manipula con el pc, especificamente,el teclado */
+    .btn:focus,
+    .switch:focus,
+    .button:focus,
+    textarea:focus {
+      outline: var(--focus);
+      outline-offset: 2px;
+    }
+
+    /*----------------------------------------------------------------
+      ------------- CHAT - CONTENEDOR PRINCIPAL ------------------------
+      ------------------------------------------------------------------*/
+    .chat {
+      background: var(--paper);
+      /*fondo blanco */
+      border: 1px solid var(--border)
+        /*borde sutil negro */
+      ;
+      border-radius: 12px;
+      /*contenedor con esquinas redondeadas */
+      display: grid;
+      /* se trabaja como si es una cuadricula, filas y columnas */
+      grid-template-rows: auto 1fr auto auto;
+      /*alto automatico para todo menos para lista de mensajes */
+      min-height: 560px;
+      /*altura minima */
+      box-shadow: var(--shadow);
+      /*sombra para profundidad en los margenes del contenedor */
+      overflow: hidden;
+      /*permite manejar el scroll sin que se apiñen*/
+    }
+
+    /*barra superior que contiene información de los temas */
+    .toolbar {
+      padding: 10px 12px;
+      /*espaciado para mejor visualización*/
+      border-bottom: 1px solid var(--border);
+      /*dividi con en contenedor de los chats */
+      background: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .toolbar .left {
+      /*es exlusivo para los elementos que estan en la izquierda */
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /*----------------------------------------------------------
+      ------------------LISTA DE MENSAJES -----------------------
+      -----------------------------------------------------------*/
+    #messages {
+      list-style: none;
+      /*si se listan, NO SE USAN VIÑETAS */
+      margin: 0;
+      padding: 16px;
+      overflow-y: auto;
+      /*scroll en la izquierda para navegar los mensajes */
+      display: flex;
+      flex-direction: column;
+      /*se representan mensajes como columnas |xxxx|*/
+      gap: 10px;
+      /*separa los mensajes por 10 pixeles */
+    }
+
+    /*contenedor de cada mensaje, su burbuja personalizada */
+    .msg {
+      max-width: 78%;
+      /*un paximo de 78% de ancho para que sean legibles los mensajes */
+      display: grid;
+      gap: 6px;
+      font-size: 1rem;
+      line-height: 1.45;
+      /*altura de linea comoda para ller mensajes */
+    }
+
+    /*mensajes emitidos en el dispositivo propio */
+    .msg .me {
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .msg .them {
+      align-self: flex-start;
+    }
+
+    /*avatar*/
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      font-size: .85rem;
+      font-weight: 800;
+    }
+
+    /*sila para que queden alineadas avatar y burbujas */
+    .row-gap {
+      display: flex;
+      align-items: flex-end;
+      gap: 8%;
+    }
+
+    .row-gap.reverse {
+      flex-direction: row-reverse;
+    }
+
+    /* burbujas y metadatos */
+    .bubble {
+      padding: 10px 12px;
+      /*espacio interno de las burbujas para mejor visualización */
+      border-radius: 14px;
+      /*esquinas redondeadas */
+      background: var(--bubble-others);
+      /* color por defecto para las personas con las que se establece conversación */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
+      /*relieve a las burbujas */
+      word-wrap: break-word;
+      /*rompe palabras muy largas en bloques para una mejor visualizacion */
+      white-space: pre-wrap;
+      /*saltos de linea del texto */
+      border: 1px solid var(--border);
+      /*controno en los mensajes paras mejor visibilidad */
+    }
+
+    /*burbujas propias, es decir, desde el dispositivo en el que se emiten */
+    .msg.me .bubble {
+      background: var(--bubble-me);
+    }
+
+    /*metadatos, como usuarios, horas, entre otros */
+    .meta {
+      font-size: .8rem;
+      /*.2 mas pequeño */
+      color: var(--text-muted);
+      /*color de la letra */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* uso del nombre de usuario */
+    .user {
+      font-weight: 800;
+    }
+
+    /*-----------------------------------------------------------------
+      ------------ FORMULARIO -------------------------------------------
+      ------------------------------------------------------------------*/
+    form#form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      /*separación de 8 pixeles entre el area de ingresar el texto y el boton de enviar */
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      /*separación en la parte superior entre el espacio de visualización y los mensajes */
+      background: var(--muted);
+    }
+
+    .input-row {
+      display: grid;
+      /* Se corrige: debe ser 1fr (textarea/preview) y auto (botón Send) */
+      grid-template-columns: 1fr auto;
+      flex-direction: column;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .input-field {
+      position: relative;
+      min-height: 72px;
+      /*buena altura */
+    }
+
+    #input {
+      width: 100%;
+      min-height: 72px;
+      max-height: 160px;
+      padding: 14px 14px;
+      /* espacio comodo para el input*/
+      border: 1px solid var(--border);
+      /*borde*/
+      border-radius: 12px;
+      /*esquinas redondeadas, mejor visualización */
+      background: var(--paper)
+        /*fondo blanco */
+      ;
+      color: var(--text);
+      line-height: 1.35;
+      /*refuerza altura de casilas*/
+      resize: normal;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+
+    #input:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+    }
+
+    #send {
+      align-self: start;
+      background: var(--brand);
+      /*boton azul */
+      color: white;
+      /*letra en blanco */
+      border: none;
+      /*no hay borde */
+      padding: 8px 12px;
+      /* para un click mas comodo */
+      border-radius: 12px;
+      font-size: .9rem;
+      /*bordes redondeados, mejor visualizacion */
+      font-weight: 800;
+      /* se alinea arriba del campo */
+      cursor: pointer;
+      /*habilita el cursos para los que esten desde pc */
+    }
+
+    #send:disabled {
+      opacity: .6;
+      /*se aclara el boton cuando se deshabilite para enviar*/
+      cursor: not-allowed;
+      /*deshabilita que se pueda cliokear */
+    }
+
+    .jump {
+      position: sticky;
+      /*es decir, se pondra un boton que queda pegado, si se baja en la pantalla. siempre estara en el mismo lugar */
+      bottom: 12px;
+      /*distancia entre el pie de pagina y la aprte final del contenedor */
+      margin-top: -36px;
+      align-self: center;
+      z-index: 2;
+      background-color: var(--brand);
+      color: #fff;
+      /*texto en blanco */
+      border-radius: 999px;
+      /*en forma de pildora ( ) */
+      padding: 6px 12px;
+      font-size: .85rem;
+      display: none;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+    }
+
+    /*aviso de nuevo mensaje */
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: var(--brand);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+
+    /*-------------RESPONSIVE-------------------------------*/
+    @media(max-width: 900px) {
+      .chat-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+
+      .header {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .chat {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .sidebar {
+        grid-column: 1;
+        grid-row: 3;
+      }
+    }
+
+    /*lo especifico para señas */
+
+
+    /*estilo para las burbujas de los mensajes*/
+    .bubble img {
+      max-width: 100%;
+      max-width: 150px;
+      /*para que no se desborde */
+      border-radius: 4px;
+      object-fit: contain;
+      /*no cambie de tamaño */
+    }
+
+    /*para botones, tamaño de la fuente, etc */
+    html.sign-mode .btn,
+    html.sign-mode .switch {
+      /*ajustar para que quepa la seña */
+      padding: 5px 8px !important;
+      font-size: 0.8rem;
+      /*hace en .2 mas pequeño el texto */
+    }
+
+    .header .switch img,
+    .sidebar .card img,
+    .toolbar .btn img,
+    .tip img {
+      height: 1.2rem;
+      /*tamaño consistente de la seña*/
+      vertical-align: middle;
+      /*seña al centro */
+      margin-right: 4px;
+      /*espacio entre el texto y la seña */
+    }
+
+    .chat {
+      height: 640px !important;
+      min-height: 640px !important;
+      max-height: 640px !important;
+      grid-template-rows: auto 1fr auto auto;
+    }
+
+    #messages {
+      overflow-y: auto !important;
+    }
+
+    /* header interno de la ventana de chat en azul bonito */
+    .toolbar {
+      background: linear-gradient(115deg, var(--brand), var(--brand-2) 100%) !important;
+      color: #fff !important;
+      border-bottom: 1px solid rgba(255, 255, 255, .25) !important;
+    }
+
+    /* tamaño de las imágenes de seña */
+    .sena-imagen {
+      height: 32px !important;
+      width: 32px !important;
+      object-fit: contain;
+      border-radius: 4px;
+      border: 1px solid #dfe7fe;
+    }
+
+    .bubble img.sena-imagen {
+      height: 32px !important;
+      width: auto !important;
+    }
+
+
+    #signPreview {
+      position: absolute;
+      inset: 10px 12px 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-content: flex-start;
+      overflow: auto;
+      pointer-events: none;
+      border-radius: 10px;
+    }
+
+    /* En modo seña, el textarea no muestra texto (pero sigue recibiendo teclado) */
+    html.sign-mode #signPreview {
+      display: flex;
+    }
+
+    html.sign-mode #input {
+      color: transparent;
+      caret-color: transparent;
+      /*oculta cursor*/
+    }
+
+    #signPreview .sena-imagen {
+      height: 32px;
+      width: auto;
+      border: 1px solid #dfe7fe;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+
+    #keyboardLSCContainer {
+      display: flex;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--paper);
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    /*html.sign-mode #keyboardLSCContainer {
+      /*display: block;*/
+
+
+    #keyboardLSCContainer .key-button {
+      display: inline-block;
+      margin: 2px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    #keyboardLSCContainer .key-button img {
+      height: 30px;
+      width: 30px;
+      object-fit: contain;
+    }
+
+    .pill {
+      border: 1px solid var(--border) !important;
+    }
+
+
+
+
+    /* Tamaño de las imágenes de seña */
+    .sena-imagen {
+      height: 46px;
+      /* más pequeñas */
+      width: auto;
+      border: 1px solid var(--border);
+    }
+
+
+    /* padding relativo crece */
+    .solo-sena {
+      display: inline;
+      margin: .5rem;
+    }
+
+    .sena-visible {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-left: .35rem;
+      vertical-align: middle;
+    }
+
+    .sena-imagen {
+      height: 48px;
+      width: 48px;
+      border: 1px solid #dfe7fe;
+    }
+
+    html.sign-mode #accesibilidadcard,
+    html.sign-mode #tipsCard {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#messages"><span class="solo-sena" data-original="Saltar al chat">Saltar al chat</span></a>
+  <div class="chat-shell">
+    <header class="header" role="banner">
+      <div class="brand" aria-label="Identidad de la sala">
+        <div class="dot" id="statusDot" title="Estado"></div>
+        <div>
+          <div><span class="sign-target" data-original="Chat Web">Chat Web</span> <strong>SignChat</strong></div>
+          <div class="status" id="statusText" role="status" aria-live="polite"><span class="solo-sena"
+              data-original="Conectando…">Conectando…</span></div>
+        </div>
+      </div>
+      <div class="row" role="group" aria-label="Controles de tema y contraste">
+        <button class="switch" id="themeToggle" title="Alternar tema claro/oscuro" aria-pressed="false"><span
+            class="solo-sena" data-original="Tema">Tema</span></button>
+        <button class="switch" id="contrastToggle" title="Alternar alto contraste" aria-pressed="false"><span
+            class="solo-sena" data-original="Alto contraste">Alto contraste</span></button>
+      </div>
+    </header>
+    <aside class="sidebar" aria-label="Preferencias y ayudas">
+      <div class="card">
+        <h3 id="modeTitle"><span class="solo-sena" data-original="Modo de comunicacion">Modo de comunicación
+        </h3></span>
+        <div class="row" style="justify-content: space-between;">
+          <button class="switch" id="signModeToggle" title="Alternar Modo Seña (LSC)" aria-pressed="false">ON</button>
+          <div>
+            <h3><span class="solo-sena" data-original="usuario">Mi usuario</h3></span>
+            <div id="meUser" class="pill">–</div>
+          </div>
+          <button id="changeName" class="switch" aria-label="Cambiar nombre de usuario"><span class="solo-sena"
+              data-original="Cambiar nombre">Cambiar nombre</span></button>
+        </div>
+      </div>
+
+      <div class="card" id="accesibilidadcard">
+        <h3>Accesibilidad</h3>
+        <div class="row" style="flex-wrap:wrap; gap:6px;">
+          <span class="pill" aria-hidden="true">Tamaño de
+            texto</span>
+          <button class="switch" id="fontDown" aria-label="Reducir tamaño de letra">A−</button>
+          <button class="switch" id="fontReset" aria-label="Restablecer tamaño de letra">A</button>
+          <button class="switch" id="fontUp" aria-label="Aumentar tamaño de letra">A+</button>
+        </div>
+        <p style="margin:.5rem 0 0; font-size:.9rem; color:var(--text-muted)">
+          Atajos: Enter = Enviar • Shift+Enter = Nueva línea
+        </p>
+      </div>
+      <div class="card" id="tipsCard">
+        <h3>Sugerencias</h3>
+        <div style="display:flex; flex-wrap: wrap; gap:6px;">
+          <button class="switch tip">Hola</button>
+          <button class="switch tip">¿Cómo esta?</span></button>
+          <button class="switch tip">¡Listo!</button>
+          <button class="switch tip">Gracias</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="chat" aria-label="Sala de chat">
+      <div class="toolbar">
+        <div class="left">
+          <span style="font-weight:800;" id="salaTitle"><span class="sign-target" data-original="Sala general">Sala
+              general</span></span>
+        </div>
+        <div class="row">
+          <button id="scrollBottom" class="btn" aria-label="Desplazar al final"><span class="solo-sena"
+              data-original="Abajo">Abajo</span></button>
+        </div>
+      </div>
+      <!-- tm-->
+      <ul id="messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Mensajes"></ul>
+      <button class="jump" id="jumpBtn" aria-label="Bajar al último mensaje">
+        <span class="solo-sena" data-original="Bajar">Bajar</span>
+      </button>
+
+      <form id="form" autocomplete="off" role="form" aria-label="Enviar mensaje">
+        <label for="input" class="sr-only" style="position:absolute;left:-9999px;">
+          <span class="solo-sena" data-original="Escribe tu mensaje">Escribe tu mensaje</span>
+        </label>
+
+        <div class="input-row">
+          <div class="input-field">
+            <textarea id="input" rows="1" placeholder="Escribe tu mensaje…" role="textbox"
+              aria-multiline="true"></textarea>
+            <div id="signPreview" aria-hidden="true"></div>
+            <div id="keyboardLSCContainer" style="display:none" aria-label="Teclado LSC Virtual"></div>
+          </div>
+          <br>
+          <button type="button" id="tgkeyboardLSCContainer" aria-label="Mostrar/ocultar teclado" class="btn"><span
+              class="solo-sena" data-original="Teclado">
+              Teclado ⌨️
+            </span></button>
+          <br>
+          <button id="send" type="submit" aria-label="Enviar mensaje">
+            <span class="sign-target" data-original="Enviar">Enviar</span>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+  <div id=" toast" class="toast" role="status" aria-live="polite"><span class="solo-sena"
+      data-original="Nuevo mensaje">Nuevo mensaje</span></div>
+
+  <!-- Lógica del cliente: (evento "chat message" con (msg, id, username)) -->
+  <script type="module">
+    import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
+
+    // ======================== SOCKET / USUARIO ===========================
+    const getUsername = () => {
+      let username = localStorage.getItem("username");
+      if (!username) {
+        username = prompt("Ingrese su nombre de usuario:") || "Anónimo";
+        localStorage.setItem("username", username);
+      }
+      return username;
+    };
+    const socket = io({ auth: { username: getUsername(), serverOffset: 0 } });
+
+    // ======================== ELEMENTOS DOM ===============================
+    // Referencias a nodos que usaremos
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const messages = document.getElementById("messages");
+    const counter = document.getElementById("counter");
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+    const themeToggle = document.getElementById("themeToggle");
+    const contrastToggle = document.getElementById("contrastToggle");
+    const changeName = document.getElementById("changeName");
+    const meUser = document.getElementById("meUser");
+    const jumpBtn = document.getElementById("jumpBtn");
+    const scrollBottomBtn = document.getElementById("scrollBottom");
+    const toast = document.getElementById("toast");
+
+    // Controlesdel modo LSC (teclado e overlay de preview)
+    const keyboardBox = document.getElementById("keyboardLSCContainer");
+    const signPreview = document.getElementById("signPreview"); //permite en el input visualizar la seña
+    const tgkeyboardLSCContainer = document.getElementById("tgkeyboardLSCContainer");
+    // Pinta el nombre del usuario (si existe el slot en la UI)
+    meUser && (meUser.textContent = localStorage.getItem("username") || "Anónimo");
+
+    // ======================== FORMTO CHAT NOMBRE Y FECHA ================================
+    const myName = () => localStorage.getItem("username") || "Anónimo";
+    const fmtTime = (d) => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    // Iniciales para el avatar
+    function initials(name) {
+      return (name || "?").trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    }
+    // Color determinístico a partir del nombre
+    function colorFromName(name) {
+      let h = 0; for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+      const hue = h % 360; return `hsl(${hue} 70% 40%)`;
+    }
+
+    // ======================== ESTADO CONEXIÓN ===========================
+    // Actualiza el UI del estado “Conectado/Desconectado”
+    const setOnline = (isOnline) => {
+      if (statusDot) statusDot.style.background = isOnline ? "#22c55e" : "#ef4444";
+      if (statusText) statusText.textContent = isOnline ? "Conectado" : "Desconectado";
+    };
+    setOnline(socket.connected);
+    socket.on("connect", () => setOnline(true));
+    socket.on("disconnect", () => setOnline(false));
+
+    // ======================== LSC ===================
+    // Endpoints de backend
+    const TXT2IMG_API = "/api/txt-to-img"; //api get
+    const KEYBOARD_API = "/api/keyboard-lsc"; //api post
+
+    // Llama al backend para traducir texto a arreglo de URLs de imágenes
+    async function fetchSignImages(text) {
+      const r = await fetch(TXT2IMG_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.error || "Error al traducir");
+      return Array.isArray(data.images) ? data.images : [];
+    }
+
+    // Pinta un arreglo de URLs de señas dentro de un contenedor
+    function renderSignImages(urls, container) {
+      container.innerHTML = "";
+      for (const src of urls) {
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "Seña";
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.className = "sena-imagen";
+        container.appendChild(img);
+      }
+    }
+    // ======================== KEYBOARD LSC (DEBAJO DEL INPUT) =============
+    // Lee el modo deseado desde ?m=sena o localStorage
+    const urlMode = new URLSearchParams(location.search).get("m");
+    const savedMode = localStorage.getItem("mode");
+    const signModeOn = (urlMode || savedMode) === "sena"; // aca se declaran los tipos
+
+    // estado dinámico del modo (lee la clase en <html>)
+    const isSignMode = () => document.documentElement.classList.contains("sign-mode");
+
+    // Aplica la UI cuando enciendo/apago el modo seña
+    function applySignModeUI(on) {
+      if (on) {
+        // Activa clase para CSS condicional y muestra overlay de preview
+        document.documentElement.classList.add("sign-mode");
+        if (signPreview) signPreview.style.display = "flex";
+        if (input) input.placeholder = "Escribe y verás la traducción en señas…";
+      } else {
+        // Vuelve a modo texto
+        document.documentElement.classList.remove("sign-mode");
+        if (signPreview) signPreview.style.display = "none";
+        if (input) input.placeholder = "Escribe tu mensaje…";
+      }
+    }
+
+    // Elimina todos los spans generados para las señas en UI fija
+    function cleanupSigns() {
+      document.querySelectorAll(".sena-visible").forEach(n => n.remove());
+    }
+    // Aplica estado inicial de UI según preferencia guardada/parámetro
+    applySignModeUI(signModeOn);
+    async function loadKeyboardLSC() {
+      if (!keyboardBox) return;
+      try {
+        keyboardBox.innerHTML = "Cargando teclado…";
+        const r = await fetch(KEYBOARD_API);
+        const html = await r.text();
+        keyboardBox.innerHTML = html;        // inyecta <div class="keyboard">…</div>
+        normalizeKeyboardButtons();              // evita submit/duplicados
+        wireKeyboardDelegation();
+        keyboardBox.style.display = "block";
+        // Si el HTML traía window.LscKeyPressed, lo anulamos para no duplicar:
+        window.LscKeyPressed = function noop() { };
+      } catch (e) {
+        console.error(e);
+        keyboardBox.innerHTML = "No se pudo cargar el teclado.";
+      }
+    }
+    //tr
+
+    function normalizeKeyboardButtons() {
+      // 1) todo <button> del teclado se fuerza a type="button"
+      // 2) se elimina cualquier inline del API
+      keyboardBox.querySelectorAll("button").forEach(b => {
+        b.type = "button";
+        if (b.hasAttribute("onclick")) b.removeAttribute("onclick");
+      });
+    }
+    function wireKeyboardDelegation() {
+
+      keyboardBox.addEventListener("click", (e) => {
+        const btn = e.target.closest(".key-button");
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const key = btn.getAttribute("data-key") ?? "";
+        applyKeyToInput(key, btn);
+      }, { passive: false });
+    }
+    function applyKeyToInput(key, sourceEl) {
+      if (!input) return;
+      if (key === "del") {
+        input.value = input.value.slice(0, -1);
+      } else {
+        if (!key && sourceEl) {
+          const img = sourceEl.querySelector("img");
+          key = img?.alt ?? "";
+        }
+        input.value += key;
+      }
+      input.dispatchEvent(new Event("input")); // refresca preview
+      input.focus();
+    }
+    if (tgkeyboardLSCContainer && keyboardBox) {
+      tgkeyboardLSCContainer.addEventListener("click", async () => {
+        if (!keyboardBox.innerHTML.trim()) {
+          await loadKeyboardLSC();
+        }
+        const isVisible = keyboardBox.style.display == 'block';
+        if (isVisible) {
+          keyboardBox.style.display = 'none',
+            tgkeyboardLSCContainer.setAttribute('aria-expanded', 'false');
+          tgkeyboardLSCContainer.querySelector("span").textContent = "Teclado";
+        }
+        else {
+          keyboardBox.style.display = 'block';
+          tgkeyboardLSCContainer.setAttribute('aria-expanded', 'true');
+          tgkeyboardLSCContainer.querySelector("span").textContent = "Ocultar";
+        }
+      });
+      if (isSignMode && signModeOn) {
+        tgkeyboardLSCContainer.setAttribute('aria-expanded', 'true');
+        tgkeyboardLSCContainer.querySelector("span").textContent = "Ocultar";
+      }
+      else {
+        tgkeyboardLSCContainer.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    // ======================== PREVIEW EN TIEMPO REAL =====================
+    // Muestra previsualización de señas mientras se escribe 
+    let t2iTimer;
+    input.addEventListener("input", () => {
+      // Si no está en modo seña no hacemos nada
+      if (!isSignMode() || !signPreview) return;
+
+      // Debounce para no saturar el backend
+      clearTimeout(t2iTimer);
+      const text = input.value.trim();
+      if (!text) { signPreview.innerHTML = ""; return; }
+
+      // Marcamos “Traduciendo…” mientras llega la respuesta
+      signPreview.textContent = "Traduciendo…";
+      t2iTimer = setTimeout(async () => {
+        try {
+          const imgs = await fetchSignImages(text);
+          renderSignImages(imgs, signPreview);
+        } catch {
+          signPreview.textContent = "Error al traducir";
+        }
+      }, 300);
+    });
+
+    // ======================== RENDER DE MENSAJES =========================
+    // Inserta un mensaje en la lista #messages
+    function appendMessage({ text, username, serverOffset }) {
+      const isMe = username === (localStorage.getItem("username") || "Anónimo");
+
+      // <li class="msg me|them">
+      const li = document.createElement("li");
+      li.className = `msg ${isMe ? "me" : "them"}`;
+
+      // Fila: avatar + burbuja
+      const row = document.createElement('div');
+      row.className = `row-gap ${isMe ? 'reverse' : ''}`;
+
+      // Avatar con iniciales y color determinístico
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.style.background = colorFromName(username);
+      avatar.style.color = '#fff';
+      avatar.textContent = initials(username);
+
+      // Burbuja del mensaje
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      // Si está en modo seña, renderiza imágenes; si no, texto plano
+      if (isSignMode()) {
+        const signOut = document.createElement("div");
+        signOut.textContent = "Traduciendo…";
+        bubble.appendChild(signOut);
+        fetchSignImages(text)
+          .then(imgs => renderSignImages(imgs, signOut))
+          .catch(() => signOut.textContent = "Error al traducir");
+      } else {
+        bubble.textContent = text;
+      }
+
+      // Ensambla
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      li.appendChild(row);
+
+      // Meta: usuario + hora
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const who = document.createElement("span"); who.className = "user"; who.textContent = username;
+      const time = document.createElement("time"); time.dateTime = new Date().toISOString(); time.textContent = fmtTime(new Date());
+      meta.appendChild(who); meta.appendChild(time);
+      li.appendChild(meta);
+
+      // Agrega al DOM
+      messages.appendChild(li);
+
+      // Actualiza serverOffset para reanudación y contador de mensajes
+      if (typeof serverOffset !== "undefined") socket.auth.serverOffset = serverOffset;
+      if (counter) counter.textContent = `${messages.children.length} mensajes`;
+
+      // Scroll si estás cerca del final
+      maybeShowJump();
+      autoScroll();
+    }
+
+    // ======================== SCROLL / JUMP ==============================
+    // Auto-scroll si estás “cerca” del fondo
+    function autoScroll() {
+      const nearBottom = messages.scrollHeight - messages.scrollTop - messages.clientHeight < 80;
+      if (nearBottom) { messages.scrollTop = messages.scrollHeight; }
+    }
+    // ¿La vista está en el fondo?
+    function atBottom() {
+      return Math.abs(messages.scrollTop + messages.clientHeight - messages.scrollHeight) < 4;
+    }
+    // Muestra/oculta botón de “Bajar”
+    function maybeShowJump() {
+      const show = !atBottom();
+      if (jumpBtn) jumpBtn.style.display = show ? "inline-flex" : "none";
+    }
+    messages.addEventListener("scroll", maybeShowJump);
+    jumpBtn?.addEventListener("click", () => { messages.scrollTop = messages.scrollHeight; });
+    scrollBottomBtn?.addEventListener("click", () => { messages.scrollTop = messages.scrollHeight; });
+
+    // ======================== EVENTOS SOCKET =============================
+    // Recibe mensajes del servidor
+    socket.on("chat message", (msg, serverOffset, username) => {
+      const wasBottom = atBottom();
+      appendMessage({ text: msg, username, serverOffset });
+      if (!wasBottom) showToast();
+      if ("vibrate" in navigator) navigator.vibrate?.(10);
+      if (document.hidden) incrementTitleBadge();
+    });
+
+    // ======================== ENVÍO MENSAJE ==============================
+    // Enviar mensaje: emite evento y limpia textarea
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      document.title = baseTitle;
+      socket.emit("chat message", text);
+      input.value = "";
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+    });
+
+    // ======================== UI EXTRA ==================================
+    // Sugerencias rápidas
+    document.querySelectorAll('.tip').forEach(btn => {
+      btn.addEventListener('click', () => { input.value = btn.textContent; input.focus(); });
+    });
+    // Cambiar nombre
+    changeName?.addEventListener('click', () => {
+      const newName = prompt('Nuevo nombre de usuario:', myName());
+      if (newName && newName.trim()) {
+        localStorage.setItem("username", newName.trim());
+        meUser && (meUser.textContent = newName.trim());
+        socket.auth.username = newName.trim();
+      }
+    });
+
+    // Tema claro/oscuro
+    themeToggle?.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeToggle.setAttribute('aria-pressed', String(!isDark));
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Alto contraste
+    contrastToggle?.addEventListener('click', () => {
+      const isHigh = document.documentElement.getAttribute('data-contrast') === 'high';
+      document.documentElement.setAttribute('data-contrast', isHigh ? 'normal' : 'high');
+      contrastToggle.setAttribute('aria-pressed', String(!isHigh));
+      localStorage.setItem('contrast', isHigh ? 'normal' : 'high');
+    });
+    const savedContrast = localStorage.getItem('contrast');
+    if (savedContrast) document.documentElement.setAttribute('data-contrast', savedContrast);
+
+    // Tamaño de fuente (A-, A, A+)
+    const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+    const getFs = () => parseInt(localStorage.getItem('fs-base') || '16', 10);
+    const setFs = (px) => { const v = clamp(px, 14, 22); document.documentElement.style.setProperty('--fs-base', v + 'px'); localStorage.setItem('fs-base', String(v)); };
+    setFs(getFs());
+    document.getElementById('fontDown')?.addEventListener('click', () => setFs(getFs() - 1));
+    document.getElementById('fontReset')?.addEventListener('click', () => setFs(16));
+    document.getElementById('fontUp')?.addEventListener('click', () => setFs(getFs() + 1));
+
+    // Toast y badge de título
+    const baseTitle = document.title;
+    function showToast() {
+      toast.style.display = 'block';
+      clearTimeout(showToast._t); showToast._t = setTimeout(() => toast.style.display = 'none', 1400);
+    }
+    function incrementTitleBadge() {
+      const m = document.title.match(/\((\d+)\) /);
+      const n = m ? parseInt(m[1], 10) + 1 : 1;
+      document.title = `(${n}) ${baseTitle}`;
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) document.title = baseTitle; });
+
+    // ======================== TRADUCCIÓN DE TEXTOS FIJOS =================
+    // Inserta (si procede) el <span class="sena-visible"> después de un nodo de texto fijo
+    function ensureOutAfter(el) {
+      if (!isSignMode()) return null; // Nunca crear el span si no está en modo seña
+      let out = el.nextElementSibling;
+      if (!(out && out.classList.contains("sena-visible"))) {
+        out = document.createElement("span");
+        out.className = "sena-visible";
+        el.insertAdjacentElement("afterend", out);
+      }
+      return out;
+    }
+
+    // Traduce el texto fijo y pinta sus imágenes de señas
+    async function translateAndAppend(el) {
+      if (!isSignMode()) return; // No traducir si no hay modo seña
+
+      // Texto fuente (preserva en data-original)
+      const text = (el.dataset.original ?? el.textContent).trim();
+      el.dataset.original = text;
+      if (!text) return;
+
+      // Asegura contenedor para las imágenes
+      const out = ensureOutAfter(el);
+      if (!out) return; // por si cambió el modo en caliente
+
+      out.textContent = "..."; // indicador de carga
+      try {
+        const images = await fetchSignImages(text);
+        if (!images.length) { out.textContent = "**SIN RESULTADO**"; return; }
+        out.innerHTML = "";
+        for (const src of images) {
+          const img = document.createElement("img");
+          img.src = src;
+          img.alt = "Seña";
+          img.className = "sena-imagen";
+          img.loading = "lazy";
+          img.decoding = "async";
+          out.appendChild(img);
+        }
+      } catch (e) {
+        console.error(e);
+        out.textContent = "Error al traducir";
+      }
+    }
+
+    // Al cargar la página, traduce los textos fijos si el modo está encendido
+    document.addEventListener("DOMContentLoaded", async () => {
+      const visibles = document.querySelectorAll(".sign-target");
+      const tambien = document.querySelectorAll(".solo-sena");
+      const todos = [...visibles, ...tambien];
+      if (isSignMode()) {
+        await Promise.all(todos.map(translateAndAppend));
+      } else {
+        cleanupSigns();
+      }
+      if (isSignMode()) {
+        if (!keyboardBox.innerHTML.trim()) await loadKeyboardLSC(); // trae el HTML del API y conecta eventos
+        keyboardBar.style.display = "block";   // muestra barra
+        keyboardBox.style.display = "block";   // muestra teclado
+      }
+    });
+
+    // ======================== TOGGLE MODO SEÑA ===========================
+    // Botón ON/OFF del modo seña (id="signModeToggle")
+    const signModeToggleBtn = document.getElementById("signModeToggle");
+    signModeToggleBtn?.addEventListener("click", async () => {
+      const on = isSignMode(); // estado actual
+
+      if (on) {
+        // Apagar modo seña
+        applySignModeUI(false);
+        localStorage.setItem("mode", "texto");
+        cleanupSigns(); // elimina todos los spans generados
+      } else {
+        // Encender modo seña
+        applySignModeUI(true);
+        localStorage.setItem("mode", "sena");
+
+        // Traduce y pinta las señas de los textos fijos en UI
+        const visibles = document.querySelectorAll(".sign-target");
+        const tambien = document.querySelectorAll(".solo-sena");
+        const todos = [...visibles, ...tambien];
+        await Promise.all(todos.map(translateAndAppend));
+
+        // Refresca el preview del textarea si había texto escrito
+        input.dispatchEvent(new Event("input"));
+      }
+
+      // Accesibilidad: marca el botón como pulsado/no pulsado
+      signModeToggleBtn.setAttribute("aria-pressed", String(!on));
+    });
+  </script>
+</body>
+
+</html>
