@@ -506,12 +506,9 @@ footer form { display:flex; gap:8px; width:100%; }
 
 ## Despliegue en producción
 
-* **Node gestionado**: PM2 o systemd.
-* **Contenedor**: define `Dockerfile` y pasa `.env` como secretos.
+
 * **Base de datos**: Neon/Cloud con `sslmode=require`.
-* Sirve `/public` con cache estática y considera compresión.
 * Configura CORS si el front-end vive en otro dominio.
-* Termina TLS en proxy inverso (Nginx/Traefik) o usa PaaS con HTTPS.
 
 ---
 
